@@ -1,0 +1,12 @@
+# Private keys
+*.key.pem
+key.pem
+
+# Server test file (generated at runtime)
+hello
+
+# macOS
+.DS_Store
+
+# VSCode
+.vscode/

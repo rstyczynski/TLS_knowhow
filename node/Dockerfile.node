@@ -1,0 +1,20 @@
+FROM node:24-slim
+
+# Install distro CA bundle so Node's system store is populated
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+
+# Copy the CA certificate that Node.js should trust.
+# NODE_EXTRA_CA_CERTS requires a file path — it cannot accept PEM content directly.
+# Tell Node.js to append this cert to its built-in Mozilla root bundle.
+# Applies to all TLS connections that do not set an explicit ca option in code.
+COPY self-signed/cert.pem /etc/ssl/certs/extra-ca.pem
+ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/extra-ca.pem
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+
+# Connects to https://host.docker.internal:8443/hello — the TLS server on the host.
+# Run with: docker run --add-host=host.docker.internal:host-gateway <image>
+CMD ["node", "--use-system-ca", "client-node-extra-ca.mjs"]
